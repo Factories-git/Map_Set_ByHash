@@ -1,7 +1,3 @@
-'''
-시간초과. 이유는 K+M-1까지 그냥 예측하기 때문.
-'''
-
 import sys
 
 input = sys.stdin.readline
@@ -22,15 +18,33 @@ for sentence in copus: #문장마다 반복
             practice[letter][sentence[i+1]] += 1 #개수를 하나 올려줌
 
 #바로 밑 코드는 정렬. 나온 횟수, 그리고 아스키 코드가 작은것으로 정렬 (제일 비효율적일 것 같은 코드)
-sorted_practice = {k : dict(sorted(v.items(), key=lambda item: (item[1], -ord(item[0])))) for k,v in practice.items()}
+sorted_practice = {key : dict(sorted(v.items(), key=lambda item: (item[1], -ord(item[0])))) for key,v in practice.items()}
 s = '[' #예측 시작을 뜻함
 now_s = '['
-for i in range(k+m-2): #[를 입력했으니 그 전까지만 반복
-    if now_s == ']': #만약 예측을 끝냈다면,
-        s += '.' #. 을 찍음
-        continue
+appeared = {}
+for i in range(50):  #[를 입력했으니 그 전까지만 반복
+    if now_s == ']':  #만약 예측을 끝냈다면,
+        s += '.'  # . 을 찍음
+        appeared['.'] = i
+        now_s = '.'
+    if now_s in appeared:
+        string = s[appeared[now_s]:i]
+        s = s[:-1]
+        if not string:
+            string = now_s
+        if len(string) == 1:
+            start = now_s
+        else:
+            start = string[(k - (len(s) - len(string))) % (len(string)) - 1:]
+        result = (start + string * (m // len(string) + 3))
+        if k <= len(s):
+            print((s + string * (m // len(string) + 3))[k-1:k-1 + m])
+        else:
+            print(result[:m])
+        exit()
+    appeared[now_s] = i
     p = sorted_practice[now_s].popitem()
-    s += p[0] #예측 중이라면, 방금 전 예측한 문자의 다음 문자중 횟수, 아스키코드 순서로 가장 우선순위가 높은걸 뽑아옴.
+    s += p[0]  #예측 중이라면, 방금 전 예측한 문자의 다음 문자중 횟수, 아스키코드 순서로 가장 우선순위가 높은걸 뽑아옴.
     sorted_practice[now_s][s[-1]] = p[1] #뽑은 걸 다시 넣어줌.
     now_s = p[0] #방금 예측한 문자로 변경
 print(s)
